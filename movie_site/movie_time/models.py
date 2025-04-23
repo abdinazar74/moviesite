@@ -25,15 +25,6 @@ class Country(models.Model):
     def __str__(self):
         return self.country_name
 
-class Director(models.Model):
-    director_name = models.CharField(max_length=100)
-    bio = models.TextField()
-    age = models.PositiveSmallIntegerField(validators=[MinValueValidator(15),
-                                                       MaxValueValidator(75)])
-    director_image = models.ImageField(upload_to='director_images/')
-
-    def __str__(self):
-        return self.director_name
 
 class Actor(models.Model):
     actor_name = models.CharField(max_length=96)
@@ -45,6 +36,15 @@ class Actor(models.Model):
     def __str__(self):
         return self.actor_name
 
+class Director(models.Model):
+    director_name = models.CharField(max_length=100)
+    bio = models.TextField()
+    age = models.PositiveSmallIntegerField(validators=[MinValueValidator(15),
+                                                       MaxValueValidator(75)])
+    director_image = models.ImageField(upload_to='director_images/')
+
+    def __str__(self):
+        return self.director_name
 
 class Genre(models.Model):
     genre_name = models.CharField(max_length=35, unique=True)
@@ -56,8 +56,8 @@ class Movie(models.Model):
     movie_name = models.CharField(max_length=74)
     year = models.DateField()
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
-    director = models.ManyToManyField(Director)
     actor = models.ManyToManyField(Actor)
+    director = models.ManyToManyField(Director, related_name='directors_movie')
     genre = models.ManyToManyField(Genre)
     TYPE_CHOICES = (
         ('144p', '144p'),
@@ -76,17 +76,27 @@ class Movie(models.Model):
     def __str__(self):
         return self.movie_name
 
+    def get_avg_rating(self):
+        rating = self.stars.all()
+        if rating.exists():
+            return round(sum([i.stars for i in rating]) / rating.count(), 1)
+        return 0
+
+    def get_count_rating(self):
+        return self.stars.count()
+
+
 
 class Movielanguages(models.Model):
     language = models.CharField(max_length=32, unique=True)
     video = models.FileField(upload_to='movie_videos/')
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='movie_videos')
 
     def __str__(self):
         return f'{self.movie}, {self.language}'
 
 class MovieMoments(models.Model):
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='movie_moments')
     movie_moments = models.ImageField(upload_to='movie_moments/')
 
     def __str__(self):
@@ -94,7 +104,7 @@ class MovieMoments(models.Model):
 
 class Rating(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='stars')
     stars = models.IntegerField(choices=[(i, str(i))for i in range(1, 11)])
     text = models.TextField()
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)

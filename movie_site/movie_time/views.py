@@ -1,16 +1,22 @@
 from .models import *
 from .serializers import *
-from rest_framework import viewsets
+from rest_framework import viewsets, generics,filters
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 class UserProfileViewSets(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
 
+class MovieViewSets(viewsets.ModelViewSet):
+    queryset = Movie.objects.all()
+    serializer_class = MovieSerializer
+
 class CountryViewSets(viewsets.ModelViewSet):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
 
-class DirectorViewSets(viewsets.ModelViewSet):
+class DirectorAPIView(generics.ListCreateAPIView):
     queryset = Director.objects.all()
     serializer_class = DirectorSerializer
 
@@ -22,9 +28,19 @@ class GenreViewSets(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
-class MovieViewSets(viewsets.ModelViewSet):
+class MovieListAPIView(generics.ListAPIView):
     queryset = Movie.objects.all()
-    serializer_class = MovieSerializer
+    serializer_class = MovielistSerializer
+    filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter]
+    filterset_fields = ['country', 'year', 'genre', 'status_movie', 'actor', 'director']
+    search_fields = ['movie_name']
+    ordering_fields = ['year']
+
+
+class MovieDetailAPIView(generics.RetrieveAPIView):
+    queryset = Movie.objects.all()
+    serializer_class = MovieDetailSerializer
+
 
 class MovielanguagesViewSets(viewsets.ModelViewSet):
     queryset = Movielanguages.objects.all()
