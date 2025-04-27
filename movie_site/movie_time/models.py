@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
-from phonenumber_field.formfields import PhoneNumberField
+# from phonenumber_field.formfields import PhoneNumberField
 from multiselectfield import MultiSelectField
 
 STATUS_CHOICES = (
@@ -13,7 +13,7 @@ class UserProfile(AbstractUser):
    age = models.PositiveSmallIntegerField(validators=[MinValueValidator(15),
                                                       MaxValueValidator(60)],
                                           null=True, blank=True)
-   phone_number = PhoneNumberField()
+   #phone_number = PhoneNumberField()
    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='simple')
 
    def __str__(self):
@@ -56,7 +56,7 @@ class Movie(models.Model):
     movie_name = models.CharField(max_length=74)
     year = models.DateField()
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
-    actor = models.ManyToManyField(Actor)
+    actor = models.ManyToManyField(Actor, related_name='actor_movie')
     director = models.ManyToManyField(Director, related_name='directors_movie')
     genre = models.ManyToManyField(Genre)
     TYPE_CHOICES = (
